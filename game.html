@@ -226,6 +226,21 @@
                     </div>
                     <h2 id="overlay-title" class="text-xl sm:text-2xl font-bold text-[#4A90E2] mb-1">시나모롤 테트리스</h2>
                     <p id="overlay-desc" class="text-[11px] sm:text-xs text-[#718096] mb-4 leading-relaxed">하늘 위 구름나라에서 귀여운 블록을 쌓아보세요!</p>
+
+                    <!-- 시작 레벨 설정 컨트롤러 추가 -->
+                    <div class="flex flex-col items-center gap-1 mb-4 bg-[#E8F4FD] px-3.5 py-2 rounded-2xl border-2 border-[#BEE3F8]">
+                        <span class="text-[10px] font-extrabold text-[#4A90E2] select-none">시작 레벨 설정</span>
+                        <div class="flex items-center gap-3">
+                            <button id="btn-lvl-minus" class="w-7 h-7 rounded-full bg-[#90CDF4] text-white font-extrabold text-xs flex items-center justify-center hover:bg-[#63B3ED] active:scale-90 transition-transform focus:outline-none select-none">
+                                ◀
+                            </button>
+                            <span id="txt-lvl-select" class="text-base font-black text-orange-400 min-w-[32px] text-center select-none">1</span>
+                            <button id="btn-lvl-plus" class="w-7 h-7 rounded-full bg-[#90CDF4] text-white font-extrabold text-xs flex items-center justify-center hover:bg-[#63B3ED] active:scale-90 transition-transform focus:outline-none select-none">
+                                ▶
+                            </button>
+                        </div>
+                    </div>
+
                     <button id="btn-start" class="px-6 py-2 bg-[#90CDF4] text-white font-bold rounded-full text-sm sm:text-md shadow-md hover:bg-[#63B3ED] active:scale-95 transition-all focus:outline-none">
                         게임 시작하기 🎮
                     </button>
@@ -445,6 +460,7 @@
                 this.grid = this.createGrid();
                 this.score = 0;
                 this.level = 1;
+                this.startLevel = 1; // 사용자가 고른 시작 레벨 저장 공간 추가
                 this.lines = 0;
                 this.isGameOver = false;
                 this.isPaused = true;
@@ -481,7 +497,7 @@
             start() {
                 this.grid = this.createGrid();
                 this.score = 0;
-                this.level = 1;
+                this.level = this.startLevel; // 선택했던 레벨로 대입
                 this.lines = 0;
                 this.isGameOver = false;
                 this.isPaused = false;
@@ -679,7 +695,8 @@
                     this.score += gainedPoints;
                     this.lines += cleared;
 
-                    const targetLevel = Math.min(100, Math.floor(this.lines / 10) + 1);
+                    // 사용자가 지정한 시작 레벨을 기준으로 10줄 단위 레벨업 시스템 빌드
+                    const targetLevel = Math.min(100, this.startLevel + Math.floor(this.lines / 10));
                     if (targetLevel > this.level) {
                         this.level = targetLevel;
                         sound.playLevelUp();
@@ -915,6 +932,29 @@
 
         // ----------------- 이벤트 리스너 및 초기화 -----------------
         const game = new TetrisGame();
+
+        // 레벨 조절 가상 버튼들 바인딩
+        const btnLvlMinus = document.getElementById('btn-lvl-minus');
+        const btnLvlPlus = document.getElementById('btn-lvl-plus');
+        const txtLvlSelect = document.getElementById('txt-lvl-select');
+
+        btnLvlMinus.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (game.startLevel > 1) {
+                game.startLevel--;
+                txtLvlSelect.innerText = game.startLevel;
+                sound.playMove(); // 조작 피드백 사운드
+            }
+        });
+
+        btnLvlPlus.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (game.startLevel < 100) {
+                game.startLevel++;
+                txtLvlSelect.innerText = game.startLevel;
+                sound.playMove(); // 조작 피드백 사운드
+            }
+        });
 
         // 게임 시작 버튼
         document.getElementById('btn-start').addEventListener('click', () => {
